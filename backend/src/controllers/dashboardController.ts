@@ -88,6 +88,34 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
       };
     });
 
+    // 8. Day-wise spending trend
+    const monthlyExpensesData = await prisma.expense.findMany({
+      where: {
+        user_id: userId,
+        expense_date: {
+          gte: startOfMonth,
+          lte: endOfMonth
+        }
+      },
+      select: { expense_date: true, amount: true }
+    });
+
+    const daysInMonth = endOfMonth.getDate();
+    const dailyTrendMap: Record<string, number> = {};
+    for (let i = 1; i <= daysInMonth; i++) {
+      dailyTrendMap[String(i).padStart(2, '0')] = 0;
+    }
+
+    monthlyExpensesData.forEach((exp: any) => {
+      const day = String(exp.expense_date.getDate()).padStart(2, '0');
+      dailyTrendMap[day] += Number(exp.amount);
+    });
+
+    const dailyTrend = Object.keys(dailyTrendMap).map(day => ({
+      day,
+      amount: dailyTrendMap[day]
+    }));
+
     return res.status(200).json(ApiResponse.success({
       totalExpenses: Number(totalExpenses),
       monthlyExpenses: Number(monthlyExpenses),
@@ -98,7 +126,8 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
         amount: Number(c._sum.amount)
       })),
       recentExpenses,
-      budgetUtilization
+      budgetUtilization,
+      dailyTrend
     }));
   } catch (error) {
     return res.status(500).json(ApiResponse.error('INTERNAL_ERROR', 'Failed to fetch dashboard summary.'));

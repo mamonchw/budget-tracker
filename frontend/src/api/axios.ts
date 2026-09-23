@@ -50,7 +50,9 @@ api.interceptors.response.use(
         // Refresh failed (e.g., refresh token expired or revoked)
         // We should log the user out by clearing local storage
         localStorage.removeItem('accessToken');
-        window.location.href = '/login'; // Force redirect to login
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+          window.location.href = '/login'; // Force redirect to login
+        }
         return Promise.reject(refreshError);
       }
     }

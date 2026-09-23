@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import api from '../api/axios';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn } from 'lucide-react';
+import api from '../api/axios';
+import { Mail, Lock, Wallet } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,64 +11,77 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
     try {
-      const response = await api.post('/auth/login', { email, password });
-      if (response.data.success) {
-        localStorage.setItem('accessToken', response.data.data.accessToken);
-        setUser(response.data.data.user);
-        navigate('/');
-      }
+      const res = await api.post('/auth/login', { email, password });
+      const { accessToken, user } = res.data.data;
+      localStorage.setItem('accessToken', accessToken);
+      setUser(user);
+      navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Login failed. Please try again.');
+      setError(err.response?.data?.error?.message || 'Login failed. Please check your credentials.');
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <div className="icon-wrapper">
-            <LogIn size={28} />
+    <div className="auth-split">
+      <div className="auth-split-left">
+        <Wallet size={48} style={{ marginBottom: '2rem' }} />
+        <h1>Welcome Back</h1>
+        <p>Take control of your finances today. Log in to track your expenses, monitor your budgets, and achieve your financial goals.</p>
+        <div style={{ position: 'absolute', bottom: '-10%', left: '-10%', width: '300px', height: '300px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', filter: 'blur(40px)' }}></div>
+      </div>
+      
+      <div className="auth-split-right">
+        <div className="auth-form-wrapper">
+          <div className="auth-header">
+            <h2>Sign In</h2>
+            <p>Enter your email and password</p>
           </div>
-          <h2>Welcome Back</h2>
-          <p>Login to manage your budget</p>
+
+          {error && <div className="alert-error">{error}</div>}
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <label>Email Address</label>
+              <div style={{ position: 'relative' }}>
+                <Mail size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                  style={{ width: '100%', paddingLeft: '2.5rem' }}
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Password</label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <input 
+                  type="password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  required 
+                  style={{ width: '100%', paddingLeft: '2.5rem' }}
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem' }}>Log In</button>
+          </form>
+
+          <div className="auth-footer">
+            Don't have an account? <Link to="/register">Create one now</Link>
+          </div>
         </div>
-
-        {error && <div className="alert-error">{error}</div>}
-
-        <form onSubmit={handleLogin} className="auth-form">
-          <div className="form-group">
-            <label>Email Address</label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              placeholder="you@example.com"
-              required 
-            />
-          </div>
-          
-          <div className="form-group">
-            <label>Password</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              placeholder="••••••••"
-              required 
-            />
-          </div>
-
-          <button type="submit" className="btn-primary">Sign In</button>
-        </form>
-
-        <p className="auth-footer">
-          Don't have an account? <Link to="/register">Create one</Link>
-        </p>
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ const app: Application = express();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: true,
   credentials: true, // required for refresh token cookies
 }));
 app.use(express.json());

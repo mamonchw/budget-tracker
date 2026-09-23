@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 import api from '../api/axios';
 
 interface User {
@@ -26,14 +27,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const token = localStorage.getItem('accessToken');
         if (!token) {
-          // If no token, maybe we have a refresh token cookie. Let's try to hit /auth/refresh
-          // Wait, the easiest way is to hit the /auth/me route. The interceptor will handle the refresh if needed.
-          const res = await api.get('/auth/me');
-          // If successful, we don't have the full user object from /me, just the ID.
-          // But actually, we should store user info in local storage for simplicity, 
-          // or just fetch it. Let's assume /me returns the ID, but we might want full user data.
-          // For now, if we get here, they are authenticated. 
-          setUser({ id: res.data.data.userId, name: 'User', email: '' }); 
+          // Try to refresh token manually first using native axios to avoid interceptor trap
+          const refreshRes = await axios.post('http://localhost:5001/api/auth/refresh', {}, { withCredentials: true });
+          if (refreshRes.data?.success) {
+            localStorage.setItem('accessToken', refreshRes.data.data.accessToken);
+            const userRes = await api.get('/auth/me');
+            setUser({ id: userRes.data.data.userId, name: 'User', email: '' }); 
+          }
         } else {
            const res = await api.get('/auth/me');
            setUser({ id: res.data.data.userId, name: 'User', email: '' });

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { IndianRupee, PieChart as PieChartIcon, TrendingDown, Wallet } from 'lucide-react';
 
 interface DashboardSummary {
@@ -10,6 +10,7 @@ interface DashboardSummary {
   totalBudget: number;
   remainingBudget: number;
   categorySpending: { category: string; amount: number }[];
+  dailyTrend: { day: string; amount: number }[];
   recentExpenses: { id: string; amount: number; category: string; expense_date: string; description?: string }[];
 }
 
@@ -88,6 +89,34 @@ export const Dashboard: React.FC = () => {
               ₹{summary.remainingBudget.toLocaleString()}
             </h3>
           </div>
+        </div>
+      </div>
+
+      {/* --- DAY-WISE TREND CHART --- */}
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
+        <h2 className="card-title">
+          <TrendingDown size={20} /> Spending Trend This Month
+        </h2>
+        <div style={{ height: '300px', width: '100%', marginTop: '1rem' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={summary.dailyTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{fill: '#64748B', fontSize: 12}} />
+              <YAxis tickLine={false} axisLine={false} tickFormatter={(val) => `₹${val}`} tick={{fill: '#64748B', fontSize: 12}} />
+              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#E2E8F0" />
+              <Tooltip 
+                formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Spent']}
+                labelFormatter={(label) => `Day ${label}`}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+              />
+              <Area type="monotone" dataKey="amount" stroke="#2563EB" strokeWidth={3} fillOpacity={1} fill="url(#colorAmount)" />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
