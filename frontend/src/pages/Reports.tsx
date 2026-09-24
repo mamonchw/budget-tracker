@@ -172,7 +172,7 @@ export const Reports: React.FC = () => {
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                       <XAxis type="number" tickFormatter={(v) => `₹${v}`} />
                       <YAxis type="category" dataKey="name" width={100} />
-                      <Tooltip formatter={(value: number) => `₹${value.toLocaleString()}`} />
+                      <Tooltip formatter={(value: any) => `₹${value.toLocaleString()}`} />
                       <Bar dataKey="amount" fill="#38BDF8" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -202,7 +202,7 @@ export const Reports: React.FC = () => {
                     <YAxis tickLine={false} axisLine={false} tickFormatter={(val) => `₹${val}`} tick={{fill: '#64748B', fontSize: 12}} />
                     <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#E2E8F0" />
                     <Tooltip 
-                      formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Spent']}
+                      formatter={(value: any) => [`₹${value.toLocaleString()}`, 'Spent']}
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                     />
                     <Area type="monotone" dataKey="amount" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorYearAmount)" />

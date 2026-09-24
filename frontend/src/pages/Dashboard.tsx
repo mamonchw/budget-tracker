@@ -146,11 +146,11 @@ export const Dashboard: React.FC = () => {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {pieData.map((entry, index) => (
+                    {pieData.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => `₹${value.toLocaleString()}`} />
+                  <Tooltip formatter={(value: any) => `₹${value.toLocaleString()}`} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -205,7 +205,7 @@ export const Dashboard: React.FC = () => {
                 <YAxis tickLine={false} axisLine={false} tickFormatter={(val) => `₹${val}`} tick={{fill: '#64748B', fontSize: 12}} width={60} />
                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#E2E8F0" />
                 <Tooltip 
-                  formatter={(value: number, name: string) => [`₹${value.toLocaleString()}`, name]}
+                  formatter={(value: any, name: any) => [`₹${value.toLocaleString()}`, name]}
                   labelFormatter={(label) => `Day ${label}`}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                 />
@@ -244,7 +244,7 @@ export const Dashboard: React.FC = () => {
                 <YAxis tickLine={false} axisLine={false} tickFormatter={(val) => `₹${val}`} tick={{fill: '#64748B', fontSize: 12}} width={60} />
                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#E2E8F0" />
                 <Tooltip 
-                  formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Spent']}
+                  formatter={(value: any) => [`₹${value.toLocaleString()}`, 'Spent']}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                 />
                 <Area type="monotone" dataKey="amount" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorYearly)" />
