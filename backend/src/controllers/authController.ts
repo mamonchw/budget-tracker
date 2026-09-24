@@ -89,7 +89,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     res.cookie('refreshToken', refreshTokenString, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -140,7 +140,7 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict'
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
     });
 
     return res.status(200).json(ApiResponse.success({ message: 'Logged out successfully.' }));
