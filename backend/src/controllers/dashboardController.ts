@@ -7,8 +7,13 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
     const userId = req.userId!;
     
     const now = new Date();
-    const currentMonth = now.getMonth() + 1; // 1-12
-    const currentYear = now.getFullYear();
+    
+    // Use query params if provided, else default to current month/year
+    const queryMonth = req.query.month ? Number(req.query.month) : now.getMonth() + 1;
+    const queryYear = req.query.year ? Number(req.query.year) : now.getFullYear();
+
+    const currentMonth = queryMonth;
+    const currentYear = queryYear;
 
     // Start of the month
     const startOfMonth = new Date(currentYear, currentMonth - 1, 1);
@@ -88,7 +93,7 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
       };
     });
 
-    // 8. Day-wise spending trend
+    // 8. Day-wise spending trend by category
     const monthlyExpensesData = await prisma.expense.findMany({
       where: {
         user_id: userId,
@@ -97,24 +102,61 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
           lte: endOfMonth
         }
       },
-      select: { expense_date: true, amount: true }
+      select: { expense_date: true, amount: true, category: true }
     });
 
     const daysInMonth = endOfMonth.getDate();
-    const dailyTrendMap: Record<string, number> = {};
+    
+    // Find all unique categories present this month
+    const categoriesThisMonth = Array.from(new Set(monthlyExpensesData.map((e: any) => e.category)));
+
+    const dailyTrendMap: Record<string, any> = {};
     for (let i = 1; i <= daysInMonth; i++) {
-      dailyTrendMap[String(i).padStart(2, '0')] = 0;
+      const dayStr = String(i).padStart(2, '0');
+      dailyTrendMap[dayStr] = { day: dayStr };
+      categoriesThisMonth.forEach(cat => {
+        dailyTrendMap[dayStr][cat] = 0;
+      });
     }
 
     monthlyExpensesData.forEach((exp: any) => {
       const day = String(exp.expense_date.getDate()).padStart(2, '0');
-      dailyTrendMap[day] += Number(exp.amount);
+      const cat = exp.category;
+      dailyTrendMap[day][cat] = Number(dailyTrendMap[day][cat]) + Number(exp.amount);
     });
 
-    const dailyTrend = Object.keys(dailyTrendMap).map(day => ({
-      day,
-      amount: dailyTrendMap[day]
+    const dailyTrend = [];
+    for (let i = 1; i <= daysInMonth; i++) {
+      const dayStr = String(i).padStart(2, '0');
+      dailyTrend.push(dailyTrendMap[dayStr]);
+    }
+
+    // 9. Yearly spending trend by month for the selected year
+    const startOfYear = new Date(currentYear, 0, 1);
+    const endOfYear = new Date(currentYear, 11, 31);
+    const yearlyExpenses = await prisma.expense.findMany({
+      where: {
+        user_id: userId,
+        expense_date: {
+          gte: startOfYear,
+          lte: endOfYear
+        }
+      },
+      select: { expense_date: true, amount: true }
+    });
+
+    const monthlySpending = Array(12).fill(0);
+    yearlyExpenses.forEach((e: any) => {
+      const m = e.expense_date.getMonth();
+      monthlySpending[m] += Number(e.amount);
+    });
+
+    const yearlyTrend = monthlySpending.map((amount, index) => ({
+      month: index + 1,
+      amount
     }));
+
+    const finalDailyTrend = dailyTrend;
 
     return res.status(200).json(ApiResponse.success({
       totalExpenses: Number(totalExpenses),
@@ -127,7 +169,9 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
       })),
       recentExpenses,
       budgetUtilization,
-      dailyTrend
+      dailyTrend: finalDailyTrend,
+      yearlyTrend,
+      activeCategories: categoriesThisMonth
     }));
   } catch (error) {
     return res.status(500).json(ApiResponse.error('INTERNAL_ERROR', 'Failed to fetch dashboard summary.'));

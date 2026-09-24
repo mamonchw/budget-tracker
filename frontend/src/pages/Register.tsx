@@ -30,7 +30,7 @@ export const Register: React.FC = () => {
       <div className="auth-split-left">
         <Wallet size={48} style={{ marginBottom: '2rem' }} />
         <h1>Start Your Journey</h1>
-        <p>Join thousands of users who are building better financial habits. Track expenses, set budgets, and grow your wealth.</p>
+        <p>Join us for building better financial habits. Track expenses, set budgets, and grow your wealth.</p>
         <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '300px', height: '300px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', filter: 'blur(40px)' }}></div>
       </div>
       
@@ -54,7 +54,7 @@ export const Register: React.FC = () => {
                   onChange={(e) => setName(e.target.value)} 
                   required 
                   style={{ width: '100%', paddingLeft: '2.5rem' }}
-                  placeholder="John Doe"
+                  placeholder="Your Name"
                 />
               </div>
             </div>

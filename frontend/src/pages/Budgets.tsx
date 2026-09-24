@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { Target, Trash2 } from 'lucide-react';
+import { Target, Trash2, Edit2 } from 'lucide-react';
 
 interface Budget {
   id: string;
@@ -23,6 +23,7 @@ export const Budgets: React.FC = () => {
   const [loading, setLoading] = useState(true);
   
   // Form State
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Food');
   const [error, setError] = useState('');
@@ -50,21 +51,43 @@ export const Budgets: React.FC = () => {
     fetchBudgets();
   }, []);
 
-  const handleAddBudget = async (e: React.FormEvent) => {
+  const handleEditClick = (budget: Budget) => {
+    setEditingId(budget.id);
+    setAmount(String(budget.amount));
+    setCategory(budget.category);
+    setError('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setAmount('');
+    setCategory('Food');
+    setError('');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
     try {
-      await api.post('/budgets', {
+      const payload = {
         amount: Number(amount),
         category,
         month: currentMonth,
         year: currentYear
-      });
-      setAmount('');
+      };
+
+      if (editingId) {
+        await api.put(`/budgets/${editingId}`, payload);
+      } else {
+        await api.post('/budgets', payload);
+      }
+      
+      handleCancelEdit();
       fetchBudgets();
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to set budget. You can only have one budget per category per month.');
+      setError(err.response?.data?.error?.message || 'Failed to save budget. You can only have one budget per category per month.');
     }
   };
 
@@ -72,6 +95,7 @@ export const Budgets: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this budget?')) return;
     try {
       await api.delete(`/budgets/${id}`);
+      if (editingId === id) handleCancelEdit();
       fetchBudgets();
     } catch (err) {
       console.error('Failed to delete budget', err);
@@ -89,14 +113,15 @@ export const Budgets: React.FC = () => {
 
       <div className="dashboard-grid">
         {/* Form Card */}
-        <div className="card">
+        <div className="card" style={{ alignSelf: 'flex-start' }}>
           <h2 className="card-title">
-            <Target size={20} /> Set a Budget Limit
+            {editingId ? <Edit2 size={20} /> : <Target size={20} />}
+            {editingId ? 'Edit Budget Limit' : 'Set a Budget Limit'}
           </h2>
           
           {error && <div className="alert-error">{error}</div>}
 
-          <form onSubmit={handleAddBudget} className="auth-form">
+          <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
               <label>Amount (₹)</label>
               <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} required />
@@ -114,7 +139,16 @@ export const Budgets: React.FC = () => {
               </select>
             </div>
 
-            <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }}>Save Budget</button>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button type="submit" className="btn-primary" style={{ flex: 1 }}>
+                {editingId ? 'Update Budget' : 'Save Budget'}
+              </button>
+              {editingId && (
+                <button type="button" onClick={handleCancelEdit} className="btn-primary" style={{ flex: 1, backgroundColor: '#64748B' }}>
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         </div>
 
@@ -148,7 +182,14 @@ export const Budgets: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.75rem', color: '#64748B' }}>
                       <span>{util.percentage}% Used</span>
                       {budgetObj && (
-                        <button onClick={() => handleDelete(budgetObj.id)} style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer' }}>Delete</button>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                          <button onClick={() => handleEditClick(budgetObj)} style={{ background: 'none', border: 'none', color: '#38BDF8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <Edit2 size={12} /> Edit
+                          </button>
+                          <button onClick={() => handleDelete(budgetObj.id)} style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <Trash2 size={12} /> Delete
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>

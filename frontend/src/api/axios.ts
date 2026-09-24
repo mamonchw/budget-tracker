@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
 const api = axios.create({
-  baseURL: 'http://localhost:5001/api', // Hardcoding for simplicity per requirements
+  baseURL: API_URL,
   withCredentials: true // Extremely important to send HTTP-Only cookies (refresh token)
 });
 
@@ -34,7 +36,7 @@ api.interceptors.response.use(
 
       try {
         // Attempt to refresh token using the HTTP-Only cookie
-        const res = await axios.post('http://localhost:5001/api/auth/refresh', {}, { withCredentials: true });
+        const res = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
         
         if (res.data?.success && res.data.data?.accessToken) {
           const newAccessToken = res.data.data.accessToken;
