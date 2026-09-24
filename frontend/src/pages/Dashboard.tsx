@@ -161,9 +161,9 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="card">
-          <h2 className="card-title">Recent Expenses</h2>
+          <h2 className="card-title">Expenses for {new Date(0, month - 1).toLocaleString('default', { month: 'long' })} {year}</h2>
           {summary.recentExpenses.length > 0 ? (
-            <div className="table-responsive">
+            <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -186,7 +186,7 @@ export const Dashboard: React.FC = () => {
               </table>
             </div>
           ) : (
-            <div className="empty-state">No recent expenses to show.</div>
+            <div className="empty-state">No expenses to show for this month.</div>
           )}
         </div>
       </div>

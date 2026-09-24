@@ -83,7 +83,7 @@ Create a `.env` file in the `backend` directory and add the following variables:
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/budget_tracker"
 
 # JWT Secrets
-JWT_SECRET="your_super_secret_jwt_key"
+JWT_ACCESS_SECRET="your_super_secret_jwt_key"
 JWT_REFRESH_SECRET="your_super_secret_refresh_key"
 
 # Frontend URL for CORS

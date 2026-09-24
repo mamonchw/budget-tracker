@@ -66,11 +66,16 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
       _sum: { amount: true }
     });
 
-    // 6. Recent expenses (Last 5)
+    // 6. Expenses for the selected month
     const recentExpenses = await prisma.expense.findMany({
-      where: { user_id: userId },
-      orderBy: { expense_date: 'desc' },
-      take: 5
+      where: { 
+        user_id: userId,
+        expense_date: {
+          gte: startOfMonth,
+          lte: endOfMonth
+        }
+      },
+      orderBy: { expense_date: 'desc' }
     });
 
     // 7. Budget utilization per category
